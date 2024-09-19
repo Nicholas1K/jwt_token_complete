@@ -52,10 +52,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws 
         ServletException, IOException {
+
+            // Escludi la rotta di login e altre rotte pubbliche dal filtro JWT
+            String requestPath = request.getServletPath();
+            if (requestPath.equals("/api/content/authenticate")
+                    || requestPath.equals("/api/registerController/register/new-user")
+                    || requestPath.equals("/api/content/home")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             String authHeader = request.getHeader("Authorization");
 
             if ( authHeader == null || !authHeader.startsWith("Bearer ")){
-                filterChain.doFilter(request, response);
+                // Se l'header Authorization è mancante o non inizia con "Bearer", restituisci
+                // 401 Unauthorized
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Error: Unauthorized - No token provided");
                 return;
             }
 
@@ -74,8 +87,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
                         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                } else {
+                    // Se il token non è valido, restituisci 401 Unauthorized
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("Error: Unauthorized - Invalid token");
+                    return;
                 }
             }
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(request, response); 
         }
 }
