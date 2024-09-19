@@ -49,6 +49,8 @@ public class JwtService {
                 .compact();
     }
 
+    /*METODO CHE LEGGE LE INFORMAZIONI ALL'INTERNO DEL TOKEN */
+    
     public Claims getClaims(String jwt){
         return Jwts.parser()
                 .verifyWith(generateKey())
