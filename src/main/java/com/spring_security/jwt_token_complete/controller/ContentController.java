@@ -1,12 +1,18 @@
 package com.spring_security.jwt_token_complete.controller;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.spring_security.jwt_token_complete.model.AuthResponse;
 import com.spring_security.jwt_token_complete.model.LoginForm;
 import com.spring_security.jwt_token_complete.service.JwtService;
 import com.spring_security.jwt_token_complete.service.MyUserDetailService;
@@ -49,15 +55,32 @@ public class ContentController {
         return "Welcome to USER home!";
     }
 
-    /* QUESTA è IL METODO DELLA LOGIN PER ACCEDERE */
+    /* QUESTA è IL METODO DELLA LOGIN PER ACCEDERE CHE RESTITUISCE IL TOKEN DELL'UTENTE SE ESISTE NEL SISTEMA*/
 
     @PostMapping("/authenticate")
-    public String authenticateAndGetToken(@RequestBody LoginForm loginForm) {
+    public AuthResponse authenticateAndGetToken(@RequestBody LoginForm loginForm) {
+
+        // Autentica l'utente con username e password
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
             loginForm.username(), loginForm.password()));
 
+            // Se l'autenticazione è valida
             if (authentication.isAuthenticated()){
-                return jwtService.generateToken(myUserDetailService.loadUserByUsername(loginForm.username()));
+
+                //ottengo i dettagli dell'utente
+                UserDetails userDetails = myUserDetailService.loadUserByUsername(loginForm.username());
+
+                //Genero il token
+                String token = jwtService.generateToken(userDetails);
+
+                //ottengo il ruolo o la lista dei ruoli
+                List<String> roles = userDetails.getAuthorities().stream()
+                                        .map(GrantedAuthority::getAuthority)
+                                        .collect(Collectors.toList());
+
+                //restituisco il token e i ruoli
+                return new AuthResponse(token,roles);
+
             } else {
                 throw new UsernameNotFoundException("Invalid credentials");
             }
