@@ -20,6 +20,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.spring_security.jwt_token_complete.jwt_config.JwtAuthenticationFilter;
 import com.spring_security.jwt_token_complete.service.MyUserDetailService;
 
+/* QUESTA è LA CLASSE DI SICUREZZA CHE UTILIZZA LA CLASSE DI JWTAUTHENTOCATIONFILTER
+ * E GESTISCE LE ROTTE CHE POSSONO ESSERE NAVIGATE DA UN USER O DA UN ADMIN
+ */
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
