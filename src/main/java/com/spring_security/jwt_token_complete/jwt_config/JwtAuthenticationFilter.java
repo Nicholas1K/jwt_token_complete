@@ -47,6 +47,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
      * Alla fine di tutto il metodo facciamo partire la catena di filtri
      * filterChain.doFilter(request, response); che filtrerà quindi
      * la richiesta e la risposta.
+     * 
+     * IN SINTESI è LA FUNZIONE CHE CONTROLLA I DATI INCLUSI NEL TOKEN DANDO 
+     * ACCESSO O MENO AGLI ANDPOINT
      */
 
     @Override
