@@ -4,7 +4,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,7 +26,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-/* questa classe principalmente serve per l'autenticazione dell'utente */
+/* questa classe principalmente serve per l'autenticazione dell'utente 
+ * quindi dovrebbe essere chiamata AUTHENTICATIONCONTROLLER
+*/
 
 
 @RestController
@@ -58,8 +63,9 @@ public class ContentController {
     /* QUESTA è IL METODO DELLA LOGIN PER ACCEDERE CHE RESTITUISCE IL TOKEN DELL'UTENTE SE ESISTE NEL SISTEMA*/
 
     @PostMapping("/authenticate")
-    public AuthResponse authenticateAndGetToken(@RequestBody LoginForm loginForm) {
+    public ResponseEntity<?> authenticateAndGetToken(@RequestBody LoginForm loginForm) {
 
+        try{ 
         // Autentica l'utente con username e password
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
             loginForm.username(), loginForm.password()));
@@ -79,11 +85,18 @@ public class ContentController {
                                         .collect(Collectors.toList());
 
                 //restituisco il token e i ruoli
-                return new AuthResponse(token,roles);
+                return ResponseEntity.ok(new AuthResponse(token, roles));
 
             } else {
                 throw new UsernameNotFoundException("Invalid credentials");
             }
+        } catch (BadCredentialsException e){
+            // Gestione delle credenziali errate
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials");
+        } catch (UsernameNotFoundException e) {
+            // Gestione nel caso in cui l'utente non venga trovato
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
     }
     
 }
